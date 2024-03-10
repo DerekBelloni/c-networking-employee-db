@@ -20,11 +20,13 @@ clean:
 $(TARGET_SRV): $(OBJ_SRV)
 	gcc -o $@ $?
 
-$(OBJ_SRV): obj/srv/%.o: src/srv/%.clean
+$(OBJ_SRV): obj/srv/%.o: src/srv/%.c
+	mkdir -p $(@D)
 	gcc -c $< -o $@ -Iinclude
 
 $(TARGET_CLI): $(OBJ_CLI)
 	gcc -o $@ $?
 
 $(OBJ_CLI): obj/cli/%.o: src/cli/%.c
+	mkdir -p $(@D)
 	gcc -c $< -o $@ -Iinclude
