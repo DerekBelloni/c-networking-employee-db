@@ -41,32 +41,32 @@ void poll_loop(unsigned short port, struct dbheader_t *dbhdr, struct employee_t 
     listen_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_fd == -1) {
         perror("socket");
-        return -1;
+        return;
     }
 
     // make socket non waiting, short for 'set socket option'
     if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
         perror("setsockopt");
-        return -1;
+        return;
     }
 
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = 0;
-    server_addr.sin_port = htons(9128);
+    server_addr.sin_port = htons(8080);
 
     // bind the socket
     if (bind(listen_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
         perror("bind");
         close(listen_fd);
-        return -1;
+        return;
     }
 
     // listen to the socket
     if (listen(listen_fd, 0) == -1) {
         perror("listen");
         close(listen_fd);
-        return -1;
+        return;
     }
 
     printf("Server listening on port %d\n", PORT);
@@ -124,7 +124,7 @@ void poll_loop(unsigned short port, struct dbheader_t *dbhdr, struct employee_t 
                     ssize_t bytes_read = read(fds[i].fd, clientStates[slot].buffer, BUFFER_SIZE - 1);
                     if (bytes_read <= 0) {
                         // Connection closed or error
-                        printf("Connection closed or error on fd %d\n", fds[i].fd);
+                        // printf("Connection closed or error on fd %d\n", fds[i].fd);
                         close(fds[i].fd);
                         clientStates[slot].fd = -1; // Mark slot as free
                         clientStates[slot].state = STATE_DISCONNECTED;
@@ -133,7 +133,7 @@ void poll_loop(unsigned short port, struct dbheader_t *dbhdr, struct employee_t 
                         // Data received, process here
                         // Ensure to null-terminate the received string if expecting C-strings
                         clientStates[slot].buffer[bytes_read] = '\0';
-                        printf("Received data from client: %s\n", clientStates[slot].buffer);
+                        // printf("Received data from client: %s\n", clientStates[slot].buffer);
                         // Respond to client or process data as needed
 
                         // Now we will call functionality for handling the client fsm
