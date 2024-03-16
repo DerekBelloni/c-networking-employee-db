@@ -158,13 +158,14 @@ int main(int argc, char *argv[]) {
     struct dbheader_t *dbhdr = NULL;
     struct employee_t *employees = NULL;
 
-    while ((c = getopt(argc, argv, "nf:a:lr:h:")) != -1) {
+    while ((c = getopt(argc, argv, "nf:p:")) != -1) {
         switch (c) {
             case 'n':
                 newfile = true;
                 break;
             case 'f':
                 filepath = optarg;
+                printf("opt arg for file path: %s\n", optarg);
                 break;
             case 'p':
                 portarg = optarg;
@@ -172,6 +173,7 @@ int main(int argc, char *argv[]) {
                 if (port == 0) {
                     printf("Bad port: %s\n", portarg);
                 }
+                break;
             case '?':
                 printf("Unknown option -%c\n", c);
                 break;
