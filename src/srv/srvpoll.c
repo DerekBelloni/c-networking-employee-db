@@ -9,6 +9,7 @@
 
 #include "srvpoll.h"
 #include "common.h"
+#include "parse.h"
 
 void fsm_reply_hello(clientstate_t *client, dbproto_hdr_t *hdr) {
     hdr->type = htonl(MSG_HELLO_RESP);
@@ -20,6 +21,7 @@ void fsm_reply_hello(clientstate_t *client, dbproto_hdr_t *hdr) {
 }
 
 void fsm_reply_hello_err(clientstate_t *client, dbproto_hdr_t *hdr) {
+    printf("in fsm_reply_hello\n");
     hdr->type = htonl(MSG_ERROR);
     hdr->len = htons(0);
 
@@ -27,43 +29,50 @@ void fsm_reply_hello_err(clientstate_t *client, dbproto_hdr_t *hdr) {
 }
 
 void handle_client_fsm(struct dbheader_t *dbhdr, struct employee_t *employees, clientstate_t *client) {
-    // Cast the client buffer into a header type
     dbproto_hdr_t *hdr = (dbproto_hdr_t*)client->buffer;
-    // Unpack hdr type and length from network endian to host endian
+    // client->state = STATE_HELLO;
+    
+    struct employee_t *employeePtr = NULL;
+    hdr->type = ntohl(hdr->type);
+    hdr->len = ntohs(hdr->len);
+    printf("Header len: %d\n", hdr->len);
 
-
-    // Add conditional logic for state being 'STATE_HELLO' or 'STATE_MSG'
-    if (client->state == STATE_HELLO) {
-        // if hdr type isnt a 'MSG_HELLO_REQ' or the length doesnt equal 1 then throw an error
+    if (client->state == STATE_HELLO && hdr->type == MSG_HELLO_REQ) {
+        printf("Header type: %d\n", hdr->type);
+        printf("Header len: %d\n", hdr->len);
         if (hdr->type != MSG_HELLO_REQ || hdr->len != 1) {
             printf("Didn't get MSG_HELLO in HELLO state...\n");
             return;
         }
 
-        // initialize a pointer variable of dbproto_hello_req type to the pointer of hdr at index 1
-            // cast the pointer to hdr to dbproto_hello_req type (because the data at that index is )
         dbproto_hello_req* hello = (dbproto_hello_req*)&hdr[1];
-        // unpack the proto field of the variable just set from network to host endian
+
         hello->proto = ntohs(hello->proto);
-        // check to see if the variables proto field matches the PROTO_VER (defined in common.h)
         if (hello->proto != PROTO_VER) {
             printf("Protocol mismatch...\n");
-            // send an error to the client
             fsm_reply_hello_err(client, hdr);
             return;
         }
         fsm_reply_hello(client, hdr);
         client->state = STATE_MSG;
-        printf("Client upgraded to STATE_MSG\n");
-        // if all those checks pass, change the clients state to STATE_MSG
     }
 
 
     if (client->state == STATE_MSG) {
-        // Now that we have said hello to the client, we will expect a data request
-            // employee list, add or delete
-
-        // 
+        printf("Inside if STATE_MSG\n");
+        printf("Header type inside STATE_MSG: %d\n", hdr->type);
+        if (hdr->type == MSG_EMPLOYEE_ADD_REQ) {
+            dbproto_employee_add_req* employee = (dbproto_employee_add_req*)&hdr[1];
+            printf("Adding employee: %s\n", employee->data);
+            // if (add_employee(dbhdr, employeePtr, employee->data) != STATUS_SUCCESS) {
+            //     fsm_reply_add_err(client, hdr);
+            //     return;
+            // } 
+            // else {
+            //     fsm_reply_add(client, hdr);
+            //     output_file(dbfd, dbhdr, *employeePtr);
+            // }
+        }
     }
 };
 

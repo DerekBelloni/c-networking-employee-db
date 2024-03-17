@@ -23,8 +23,19 @@ int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *a
     printf("%s\n", addstring);
 
     char *name = strtok(addstring, ",");
+    if (name == NULL) {
+        return STATUS_ERROR;
+    }
+
     char *addr = strtok(NULL, ",");
+    if (addr == NULL) {
+        return STATUS_ERROR;
+    }
+
     char *hours = strtok(NULL, ",");
+    if (hours ==NULL || atoi(hours) == 0) {
+        return STATUS_ERROR;
+    }
 
     printf("%s %s %s\n", name, addr, hours);
 

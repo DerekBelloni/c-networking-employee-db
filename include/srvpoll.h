@@ -10,7 +10,6 @@
 
 typedef enum {
     STATE_NEW,
-    // clients will be in the connected state until they get to the 'handle_client_fsm'
     STATE_CONNECTED,
     STATE_DISCONNECTED,
     STATE_HELLO,

@@ -137,6 +137,7 @@ void poll_loop(unsigned short port, struct dbheader_t *dbhdr, struct employee_t 
                         // Respond to client or process data as needed
 
                         // Now we will call functionality for handling the client fsm
+                        clientStates[freeSlot].state = STATE_HELLO;
                         handle_client_fsm(dbhdr, employees, &clientStates[slot]);
                     }
                 }
@@ -165,7 +166,6 @@ int main(int argc, char *argv[]) {
                 break;
             case 'f':
                 filepath = optarg;
-                printf("opt arg for file path: %s\n", optarg);
                 break;
             case 'p':
                 portarg = optarg;
