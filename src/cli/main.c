@@ -24,8 +24,8 @@ int send_employee(int fd, char *addstr) {
     dbproto_employee_add_req* employee = (dbproto_hello_req*)&hdr[1];
     strncpy(&employee->data, addstr, sizeof(employee->data));
 
-    hdr->type = ntohl(hdr->type);
-    hdr->len = htons(hdr->len);
+    hdr->type = htonl(hdr->type);
+    hdr->len =  htons(hdr->len);
 
     write(fd, buff, sizeof(dbproto_hdr_t) + sizeof(dbproto_employee_add_req));
 
@@ -67,7 +67,7 @@ int send_hello(int fd) {
     hello->proto = htons(hello->proto);
 
     // write the fd to the buffer
-    printf("in send_hello: %d\n", hdr->type);
+    printf("in send_hello before write: %d\n", hdr->type);
     write(fd, buff, sizeof(dbproto_hdr_t) + sizeof(dbproto_hello_req));
 
     // receive the response

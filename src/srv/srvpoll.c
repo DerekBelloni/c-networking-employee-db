@@ -30,12 +30,14 @@ void fsm_reply_hello_err(clientstate_t *client, dbproto_hdr_t *hdr) {
 
 void handle_client_fsm(struct dbheader_t *dbhdr, struct employee_t *employees, clientstate_t *client) {
     dbproto_hdr_t *hdr = (dbproto_hdr_t*)client->buffer;
-    // client->state = STATE_HELLO;
-    
-    struct employee_t *employeePtr = NULL;
     hdr->type = ntohl(hdr->type);
     hdr->len = ntohs(hdr->len);
-    printf("Header len: %d\n", hdr->len);
+
+    if (client->state == STATE_CONNECTED) {
+        client->state = STATE_HELLO; 
+    }
+    
+    struct employee_t *employeePtr = NULL;
 
     if (client->state == STATE_HELLO && hdr->type == MSG_HELLO_REQ) {
         printf("Header type: %d\n", hdr->type);
@@ -46,7 +48,6 @@ void handle_client_fsm(struct dbheader_t *dbhdr, struct employee_t *employees, c
         }
 
         dbproto_hello_req* hello = (dbproto_hello_req*)&hdr[1];
-
         hello->proto = ntohs(hello->proto);
         if (hello->proto != PROTO_VER) {
             printf("Protocol mismatch...\n");
@@ -60,7 +61,7 @@ void handle_client_fsm(struct dbheader_t *dbhdr, struct employee_t *employees, c
 
     if (client->state == STATE_MSG) {
         printf("Inside if STATE_MSG\n");
-        printf("Header type inside STATE_MSG: %d\n", hdr->type);
+        printf("Header type inside STATE_MSG: %d\n", ntohl(hdr->type));
         if (hdr->type == MSG_EMPLOYEE_ADD_REQ) {
             dbproto_employee_add_req* employee = (dbproto_employee_add_req*)&hdr[1];
             printf("Adding employee: %s\n", employee->data);

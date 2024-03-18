@@ -87,19 +87,17 @@ void poll_loop(unsigned short port, struct dbheader_t *dbhdr, struct employee_t 
             }
         }
 
-        // Wait for an event on one of the sockets
-        int n_events = poll(fds, nfds, -1); // -1 for no timeout
+        int n_events = poll(fds, nfds, -1); 
         if (n_events == -1) {
             perror("poll");
-            break; // Exit or handle error appropriately
+            break; 
         }
 
-        // Check if there's an incoming connection on the listen_fd
         if (fds[0].revents & POLLIN) {
             conn_fd = accept(listen_fd, (struct sockaddr *)&client_addr, &client_addr_len);
             if (conn_fd == -1) {
                 perror("accept");
-                continue; // Continue to next iteration of the loop
+                continue; 
             }
 
             printf("New Connection: %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
@@ -111,7 +109,6 @@ void poll_loop(unsigned short port, struct dbheader_t *dbhdr, struct employee_t 
             } else {
                 clientStates[freeSlot].fd = conn_fd;
                 clientStates[freeSlot].state = STATE_CONNECTED;
-                // No need to increment nfds here, it's done at the beginning of the loop
                 printf("Slot %d has fd %d\n", freeSlot, clientStates[freeSlot].fd);
             }
         }
@@ -120,24 +117,15 @@ void poll_loop(unsigned short port, struct dbheader_t *dbhdr, struct employee_t 
         for (int i = 1; i < nfds; i++) {
             if (fds[i].revents & POLLIN) {
                 int slot = find_slot_by_fd(&clientStates, fds[i].fd);
-                if (slot != -1) { // Valid slot found
+                if (slot != -1) { 
                     ssize_t bytes_read = read(fds[i].fd, clientStates[slot].buffer, BUFFER_SIZE - 1);
                     if (bytes_read <= 0) {
-                        // Connection closed or error
-                        // printf("Connection closed or error on fd %d\n", fds[i].fd);
                         close(fds[i].fd);
-                        clientStates[slot].fd = -1; // Mark slot as free
+                        clientStates[slot].fd = -1; 
                         clientStates[slot].state = STATE_DISCONNECTED;
-                        // No need to decrement nfds here, it's recalculated at the start of the loop
                     } else {
-                        // Data received, process here
-                        // Ensure to null-terminate the received string if expecting C-strings
                         clientStates[slot].buffer[bytes_read] = '\0';
-                        // printf("Received data from client: %s\n", clientStates[slot].buffer);
-                        // Respond to client or process data as needed
-
-                        // Now we will call functionality for handling the client fsm
-                        clientStates[freeSlot].state = STATE_HELLO;
+                        clientStates[freeSlot].state = STATE_CONNECTED;
                         handle_client_fsm(dbhdr, employees, &clientStates[slot]);
                     }
                 }
